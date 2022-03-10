@@ -3,7 +3,8 @@ const helmet = require('helmet')
 const cors = require('cors')
 const db = require('./data/db-config')
 const usersRouter = require('./auth/users/users-router')
-
+const recipesRouter = require('./auth/recipes/recipes-router')
+const restrict = require('./auth/restrict')
 // function getAllUsers() { return db('users') }
 
 // async function insertUser(user) {
@@ -18,6 +19,7 @@ server.use(express.json())
 server.use(helmet())
 server.use(cors())
 server.use('/api/users', usersRouter)
+server.use('/api/recipes', restrict, recipesRouter)
 
 server.get('/', (req, res, next) => {
   res.json({api: 'up'})

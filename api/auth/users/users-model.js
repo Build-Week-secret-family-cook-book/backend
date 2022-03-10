@@ -9,7 +9,17 @@ const insertUser = async user => {
     return newUser
 }
 
+const deleteUser = user_id => {
+    return db("users").where("user_id", user_id).del()
+}
+
+const findUser = user => {
+    return db("users").where("username", user.username)
+}
+
 module.exports = {
     getAllUsers,
-    insertUser
+    insertUser,
+    deleteUser,
+    findUser
 }

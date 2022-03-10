@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const bcrypt = require('bcrypt')
-const { checkUser } = require('./users-middleware')
+const { checkUser, checkByUserId, checkByUsername } = require('./users-middleware')
 const Users = require('./users-model')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../../../config')
@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
 
 router.post('/register', checkUser, (req, res, next) => {
     let user = req.body;
-    user.password = bcrypt.hashSync(user.password, 5);
+    user.password = bcrypt.hashSync(user.password, 8);
 
     Users.insertUser(user)
         .then(newUser => {
@@ -26,7 +26,7 @@ router.post('/register', checkUser, (req, res, next) => {
 })
 
 router.post('/login', (req, res, next) => {
-    let { username, password } = req.body
+    let { password } = req.body
     // If username or password is not found, return an error.
     if (!username || !password) {
         return res.status(400).json({ message: "username and password required" })
@@ -43,10 +43,29 @@ router.post('/login', (req, res, next) => {
                     token
                 })
             } else {
-                res.status(401).json({message: `invalid credentials`})
+                res.status(401).json({ message: `invalid credentials` })
             }
         })
 })
+
+router.get('/:username', checkByUsername, (req, res ,next) => {
+    let {username} = req.params;
+    Users.findUser({username})
+    .then(user => {
+        res.json(user)
+    })
+    .catch(next)
+})
+
+router.delete('/:user_id', checkByUserId, (req, res, next) => {
+    let { user_id } = req.params;
+
+    Users.deleteUser(user_id)
+        .then(() => {
+            res.json({ message: 'User deleted!' })
+        })
+        .catch(next);
+});
 
 function generateToken(user) {
     const payload = {
